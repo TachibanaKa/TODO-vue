@@ -57,6 +57,8 @@ state.action.isDialog = props.isDialog;
 
 const loginClose = () => {
   state.action.isDialog = false;
+  post.account = ''
+  post.password = ''
 };
 const loginOpen = () => {
   state.action.isDialog = true;
@@ -65,12 +67,14 @@ const toLogin = async() => {
   let res = await login(state.post);
   if (res.code == 200) {
     state.action.isDialog = false;
-    sessionStorage.setItem("token", res.token);
-    store.commit('setUserData',res.token)
+    sessionStorage.setItem("token", res.data.token);
+    store.commit('setUserData',res.data)
     ElMessage.success({
       message: "登陆成功",
       type: "success",
     });
+    state.post.account = ''
+    state.post.password = ''
   }else{
     ElMessage.error(res.data);
   }
@@ -83,7 +87,6 @@ const reset = () => {
 ctx.expose({
   loginOpen() {
     state.action.isDialog = true;
-    console.log("loginOpen");
   },
 });
 </script>

@@ -20,8 +20,14 @@
       <el-container>
         <el-aside width="25%" class="temp">
           <span>收纳箱</span>
-          <span class="add-temp">+</span>
-          <div></div>
+          <span class="add-temp" @click="IsTemp('add')">+</span>
+          <ul v-if="state.show.tempTodoArr">
+            <li v-for="(item) in state.show.tempTodoArr" :key="item.id" class="temp-item">
+              <span>{{item.title}}</span>
+              <el-button type="primary" size="mini" round plain @click="IsTemp('update',item)">修改</el-button>
+              <el-button type="danger" size="mini" round plain @click="del('temp',item)">删除</el-button>
+              </li>
+          </ul>
         </el-aside>
         <el-main class="main-center">
           <div class="left-top sort">
@@ -64,21 +70,30 @@
     </el-container>
     <Login :isDialog="state.action.isDialog" ref="loginRef" />
     <Register :isDialog="state.action.isDialog" ref="registerRef" />
+    <TempAction :isDialog="state.action.isDialog" :type="state.action.tempType" :value="state.action.tempValue" :init="tempInit"  ref="tempAction" />
   </div>
 </template>
 <script setup>
 import Login from "./login.vue";
 import Register from "./register.vue";
-import { reactive, ref } from "vue";
+import TempAction from "./tempAction.vue"
+import { reactive, ref, onMounted,watch } from "vue";
 import { useStore } from "vuex";
+import {getTodo, delTodo} from "/http/api.js"
+import { ElMessage } from "element-plus";
+
 const loginRef = ref(null);
 const registerRef = ref(null);
+const tempAction = ref(null);
 const store = useStore()
 const state = reactive({
   action: {
     isDialog: false,
+    tempType: 'add',
+    tempValue: '',
   },
   show: {
+    tempTodoArr:[],
     activities: [
       {
         content: "活动按期开始",
@@ -94,7 +109,17 @@ const state = reactive({
       },
     ],
   },
+  post:{
+    userId:null
+  }
 });
+const tempInit = async()=>{
+  state.post.userId = store.state.userData.userId
+  let res = await getTodo(state.post)
+  if(res.code == 200){
+    state.show.tempTodoArr = res.data
+  }
+}
 const loginOpen = () => {
   loginRef.value.loginOpen();
 };
@@ -104,10 +129,46 @@ const menuSelect = (e) => {
 const registerOpen = () => {
   registerRef.value.registerOpen();
 }
-console.log(store)
+const IsTemp = (type, item) =>{
+  state.action.tempType = type
+  if(type == 'update'){
+    state.action.tempValue = item
+    tempAction.value.IsTemp(tempInit)
+  }else{
+    tempAction.value.IsTemp()
+  }
+}
+const del = async(type, item)=>{
+  if(type=='temp'){
+    let res = await delTodo({id:item.id})
+    if(res.code == 200){
+      ElMessage.success({
+        message: "删除成功",
+        type: "success",
+      });
+    }
+  }
+  tempInit()
+}
+onMounted(()=>{
+  tempInit()
+})
+watch(
+  ()=>store.state.userData,(newValue, oldValue)=>{
+    tempInit()
+  }
+)
+
 </script>
 
 <style lang="scss" scoped>
+ul{
+  padding: 0;
+}
+li {
+  list-style: none;
+  text-align: left;
+}
 .user-action{
   width: 20%;
   float: right;
@@ -123,6 +184,13 @@ console.log(store)
   .temp {
     border-right: 1px solid #ccc;
     height: 80vh;
+    .temp-item{
+      width: 100%;
+      span{
+        display: inline-block;
+        width: 55%;
+      }
+    }
     .add-temp {
       margin-left: 15px;
       display: inline-block;

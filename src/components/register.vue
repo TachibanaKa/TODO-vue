@@ -57,6 +57,8 @@ state.action.isDialog = props.isDialog;
 
 const registerClose = () => {
   state.action.isDialog = false;
+  post.account = ''
+  post.password = ''
 };
 const registerOpen = () => {
   state.action.isDialog = true;
@@ -69,6 +71,8 @@ const toRegister = async() => {
       message: "注册成功,请登录",
       type: "success",
     });
+    post.account = ''
+    post.password = ''
   }else{
     ElMessage.error(res.data);
   }
