@@ -58,6 +58,7 @@ const state = reactive({
   },
 });
 
+/* 初始化值 */
 const initTemp = () => {
   switch (props.type) {
     case "add":

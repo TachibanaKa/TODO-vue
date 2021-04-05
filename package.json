@@ -2,7 +2,7 @@
   "name": "TODO",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite --port 8080",
+    "dev": "vite --port 8081",
     "build": "vite build",
     "pro": "vite build --mode produce",
     "serve": "vite preview"
